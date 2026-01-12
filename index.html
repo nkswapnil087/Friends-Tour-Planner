@@ -99,6 +99,7 @@
             <div class="section">
                 <h3>Add Expense</h3>
                 <div class="expense-form">
+                    <input type="date" id="expenseDate" required>
                     <select id="expenseTag">
                         <option value="Breakfast">Breakfast</option>
                         <option value="Lunch">Lunch</option>
@@ -114,13 +115,15 @@
                     <button class="btn-primary" onclick="addExpense()">Add</button>
                 </div>
 
-                <h3>Expense Summary</h3>
-                <div id="expensesList"></div>
-
-                <h3>Total Per Person</h3>
-                <div id="totalPerPerson"></div>
+                <h3>Individual Expense Records</h3>
+                <div id="expensesByPerson"></div>
             </div>
         </div>
+    </div>
+
+    <!-- Creator Footer -->
+    <div class="creator-footer">
+        Made by Nitun Kundu Swapnil
     </div>
 
     <script src="script.js"></script>

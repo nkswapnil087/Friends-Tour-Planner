@@ -9,6 +9,7 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     color: #333;
+    padding-bottom: 60px;
 }
 
 .screen {
@@ -62,6 +63,21 @@ header h2 {
 
 .delete-btn:hover {
     background: #c0392b;
+}
+
+/* Creator Footer */
+.creator-footer {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #667eea;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 999;
 }
 
 /* Welcome Message */
@@ -163,6 +179,7 @@ header h2 {
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
+    z-index: 998;
 }
 
 .fab:hover {
@@ -320,10 +337,20 @@ header h2 {
     color: #667eea;
 }
 
+.warning-message {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    color: #856404;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-weight: 600;
+}
+
 /* Expenses */
 .expense-form {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
     gap: 10px;
     margin-bottom: 20px;
 }
@@ -340,17 +367,38 @@ header h2 {
     padding: 10px 20px;
 }
 
-.expense-item {
+.person-expenses {
     background: #f8f9fa;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.person-expenses h4 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.expense-record {
+    background: white;
     padding: 12px;
     margin-bottom: 8px;
     border-radius: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid #e0e0e0;
 }
 
-.expense-item .tag {
+.expense-record .date {
+    color: #666;
+    font-size: 13px;
+    margin-right: 10px;
+}
+
+.expense-record .tag {
     background: #667eea;
     color: white;
     padding: 4px 10px;
@@ -359,31 +407,31 @@ header h2 {
     margin-right: 10px;
 }
 
-.expense-item .delete-expense {
+.expense-record .amount {
+    font-weight: 600;
+    color: #333;
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+.expense-record .delete-expense {
     background: #e74c3c;
     color: white;
     border: none;
     padding: 5px 10px;
     border-radius: 3px;
     cursor: pointer;
+    font-size: 12px;
 }
 
-.total-item {
-    background: #f8f9fa;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    font-weight: 600;
-}
-
-.total-item.positive {
-    border-left: 4px solid #27ae60;
-}
-
-.total-item.negative {
-    border-left: 4px solid #e74c3c;
+.expense-total {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #667eea;
+    font-size: 16px;
+    font-weight: 700;
+    color: #667eea;
+    text-align: right;
 }
 
 @media (max-width: 600px) {
@@ -393,5 +441,10 @@ header h2 {
 
     .trips-container {
         grid-template-columns: 1fr;
+    }
+
+    .creator-footer {
+        font-size: 11px;
+        padding: 6px 12px;
     }
 }

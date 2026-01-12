@@ -8,6 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTrips();
     renderTripsList();
 
+    // Set today's date as default for expense date
+    const today = new Date().toISOString().split('T')[0];
+    if (document.getElementById('expenseDate')) {
+        document.getElementById('expenseDate').value = today;
+    }
+
     document.getElementById('addTripBtn').addEventListener('click', () => {
         showScreen('newTripScreen');
         resetNewTripForm();
@@ -56,7 +62,7 @@ function renderTripsList() {
 
 // Delete trip from home screen
 function deleteTripFromHome(tripId, event) {
-    event.stopPropagation(); // Prevent opening the trip
+    event.stopPropagation();
 
     if (confirm('Delete this trip? This cannot be undone!')) {
         trips = trips.filter(t => t.id !== tripId);
@@ -144,6 +150,10 @@ function openTrip(tripId) {
 
     document.getElementById('tripTitle').textContent = trip.destination;
 
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('expenseDate').value = today;
+
     // Populate expense member dropdown
     const memberSelect = document.getElementById('expenseMember');
     memberSelect.innerHTML = trip.companions.map(name =>
@@ -208,7 +218,7 @@ function renderSeats() {
     `).join('');
 }
 
-// Room Randomization
+// Room Randomization - FIXED for all edge cases
 function randomizeRooms() {
     const trip = trips.find(t => t.id === currentTripId);
     const numRooms = parseInt(document.getElementById('numRooms').value);
@@ -219,16 +229,25 @@ function randomizeRooms() {
         return;
     }
 
+    const totalCapacity = numRooms * maxPerRoom;
+    const totalPeople = trip.companions.length;
+
+    // Check if there's enough capacity
+    if (totalCapacity < totalPeople) {
+        alert(`Not enough capacity! You need at least ${Math.ceil(totalPeople / maxPerRoom)} rooms with ${maxPerRoom} people each to accommodate ${totalPeople} people.`);
+        return;
+    }
+
     const shuffled = [...trip.companions].sort(() => Math.random() - 0.5);
     const rooms = Array(numRooms).fill(null).map(() => []);
 
+    // Distribute people round-robin to ensure all are assigned
     shuffled.forEach((person, idx) => {
         const roomIdx = idx % numRooms;
-        if (rooms[roomIdx].length < maxPerRoom) {
-            rooms[roomIdx].push(person);
-        }
+        rooms[roomIdx].push(person);
     });
 
+    // Only keep non-empty rooms
     trip.roomAssignments = rooms.filter(room => room.length > 0);
     saveTrips();
     renderRooms();
@@ -243,26 +262,42 @@ function renderRooms() {
         return;
     }
 
-    container.innerHTML = trip.roomAssignments.map((room, idx) => `
+    const totalAssigned = trip.roomAssignments.reduce((sum, room) => sum + room.length, 0);
+    const totalPeople = trip.companions.length;
+
+    let html = trip.roomAssignments.map((room, idx) => `
         <div class="room">
             <strong>Room ${idx + 1} (${room.length} people):</strong> ${room.join(', ')}
         </div>
     `).join('');
+
+    // Show warning if someone is left out (shouldn't happen with fixed algorithm)
+    if (totalAssigned < totalPeople) {
+        html += `<div class="warning-message">⚠️ Warning: ${totalPeople - totalAssigned} people not assigned! Increase room capacity.</div>`;
+    }
+
+    container.innerHTML = html;
 }
 
-// Expenses
+// Expenses - NEW SYSTEM: Individual tracking with dates
 function addExpense() {
     const trip = trips.find(t => t.id === currentTripId);
+    const date = document.getElementById('expenseDate').value;
     const tag = document.getElementById('expenseTag').value;
     const member = document.getElementById('expenseMember').value;
     const amount = parseFloat(document.getElementById('expenseAmount').value);
+
+    if (!date) {
+        alert('Please select a date!');
+        return;
+    }
 
     if (!amount || amount <= 0) {
         alert('Please enter a valid amount!');
         return;
     }
 
-    trip.expenses.push({ tag, member, amount });
+    trip.expenses.push({ date, tag, member, amount });
     saveTrips();
 
     document.getElementById('expenseAmount').value = '';
@@ -278,45 +313,50 @@ function deleteExpense(index) {
 
 function renderExpenses() {
     const trip = trips.find(t => t.id === currentTripId);
+    const container = document.getElementById('expensesByPerson');
 
-    // Render expenses list
-    const expensesList = document.getElementById('expensesList');
     if (trip.expenses.length === 0) {
-        expensesList.innerHTML = '<p style="color: #666;">No expenses added yet!</p>';
-    } else {
-        expensesList.innerHTML = trip.expenses.map((exp, idx) => `
-            <div class="expense-item">
-                <div>
-                    <span class="tag">${exp.tag}</span>
-                    <strong>${exp.member}</strong> paid <strong>${exp.amount} BDT</strong>
-                </div>
-                <button class="delete-expense" onclick="deleteExpense(${idx})">✕</button>
-            </div>
-        `).join('');
+        container.innerHTML = '<p style="color: #666;">No expenses added yet!</p>';
+        return;
     }
 
-    // Calculate totals per person
-    const totals = {};
-    trip.companions.forEach(name => totals[name] = 0);
-    trip.expenses.forEach(exp => totals[exp.member] += exp.amount);
+    // Group expenses by person
+    const expensesByPerson = {};
+    trip.companions.forEach(name => expensesByPerson[name] = []);
 
-    const totalExpenses = trip.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const avgPerPerson = totalExpenses / trip.companions.length;
+    trip.expenses.forEach((exp, idx) => {
+        expensesByPerson[exp.member].push({ ...exp, index: idx });
+    });
 
-    const totalsContainer = document.getElementById('totalPerPerson');
-    totalsContainer.innerHTML = trip.companions.map(name => {
-        const balance = totals[name] - avgPerPerson;
-        const balanceClass = balance > 0 ? 'positive' : balance < 0 ? 'negative' : '';
-        const balanceText = balance > 0
-            ? `Should receive ${balance.toFixed(0)} BDT`
-            : balance < 0
-                ? `Should pay ${Math.abs(balance).toFixed(0)} BDT`
-                : `All settled!`;
+    // Render each person's expenses
+    container.innerHTML = trip.companions.map(name => {
+        const personExpenses = expensesByPerson[name];
+        const total = personExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+        if (personExpenses.length === 0) {
+            return `
+                <div class="person-expenses">
+                    <h4>${name}</h4>
+                    <p style="color: #666;">No expenses yet</p>
+                </div>
+            `;
+        }
+
+        // Sort by date (newest first)
+        personExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         return `
-            <div class="total-item ${balanceClass}">
-                <span><strong>${name}</strong> - Paid: ${totals[name]} BDT</span>
-                <span>${balanceText}</span>
+            <div class="person-expenses">
+                <h4>${name}</h4>
+                ${personExpenses.map(exp => `
+                    <div class="expense-record">
+                        <span class="date">${exp.date}</span>
+                        <span class="tag">${exp.tag}</span>
+                        <span class="amount">${exp.amount} BDT</span>
+                        <button class="delete-expense" onclick="deleteExpense(${exp.index})">✕</button>
+                    </div>
+                `).join('')}
+                <div class="expense-total">Total: ${total} BDT</div>
             </div>
         `;
     }).join('');
