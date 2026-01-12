@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends Tour Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Home Screen -->
+    <div id="homeScreen" class="screen active">
+        <header>
+            <h1>🌍 Friends Tour Planner</h1>
+        </header>
+
+        <div class="welcome-message">
+            <p>Manage your group trips easily! Create trips, randomize seats & rooms, track expenses 🚀</p>
+        </div>
+
+        <div id="tripsList" class="trips-container">
+            <!-- Trips will be dynamically added here -->
+        </div>
+
+        <button id="addTripBtn" class="fab">+</button>
+    </div>
+
+    <!-- New Trip Screen -->
+    <div id="newTripScreen" class="screen">
+        <header>
+            <button class="back-btn" onclick="showHome()">← Back</button>
+            <h2>Create New Trip</h2>
+        </header>
+
+        <div class="form-container">
+            <div id="step1" class="step active">
+                <label>Destination</label>
+                <input type="text" id="destinationInput" placeholder="e.g., Cox's Bazar">
+                <button onclick="nextStep()">Next</button>
+            </div>
+
+            <div id="step2" class="step">
+                <label>Number of Friends (including you)</label>
+                <input type="number" id="friendsCountInput" min="2" placeholder="e.g., 5">
+                <button onclick="nextStep()">Next</button>
+            </div>
+
+            <div id="step3" class="step">
+                <label>Enter Names</label>
+                <div id="namesInputContainer"></div>
+                <button onclick="createTrip()">Create Trip</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trip Detail Screen -->
+    <div id="tripDetailScreen" class="screen">
+        <header>
+            <button class="back-btn" onclick="showHome()">← Back</button>
+            <h2 id="tripTitle"></h2>
+            <button class="delete-btn" onclick="deleteCurrentTrip()">🗑️</button>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('seats')">Seats</button>
+            <button class="tab" onclick="showTab('rooms')">Rooms</button>
+            <button class="tab" onclick="showTab('expenses')">Expenses</button>
+        </div>
+
+        <!-- Seats Tab -->
+        <div id="seatsTab" class="tab-content active">
+            <div class="section">
+                <h3>Seat Partners (Train/Bus)</h3>
+                <button class="btn-primary" onclick="randomizeSeats()">🎲 Randomize Pairs</button>
+                <div id="seatPairs" class="pairs-container"></div>
+            </div>
+        </div>
+
+        <!-- Rooms Tab -->
+        <div id="roomsTab" class="tab-content">
+            <div class="section">
+                <h3>Hotel Room Assignments</h3>
+                <div class="input-group">
+                    <label>Number of Rooms:</label>
+                    <input type="number" id="numRooms" min="1" placeholder="2">
+                </div>
+                <div class="input-group">
+                    <label>Max People per Room:</label>
+                    <input type="number" id="maxPerRoom" min="1" placeholder="3">
+                </div>
+                <button class="btn-primary" onclick="randomizeRooms()">🎲 Randomize Rooms</button>
+                <div id="roomGroups" class="rooms-container"></div>
+            </div>
+        </div>
+
+        <!-- Expenses Tab -->
+        <div id="expensesTab" class="tab-content">
+            <div class="section">
+                <h3>Add Expense</h3>
+                <div class="expense-form">
+                    <select id="expenseTag">
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Hotel">Hotel</option>
+                        <option value="Tickets">Tickets</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="expenseMember"></select>
+                    <input type="number" id="expenseAmount" placeholder="Amount (BDT)" min="0">
+                    <button class="btn-primary" onclick="addExpense()">Add</button>
+                </div>
+
+                <h3>Expense Summary</h3>
+                <div id="expensesList"></div>
+
+                <h3>Total Per Person</h3>
+                <div id="totalPerPerson"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
